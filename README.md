@@ -1,54 +1,134 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+````markdown
+# 🌐 URL Shortener Frontend
 
-Currently, two official plugins are available:
+This is the **frontend** of a full-stack URL Shortener application built using **React**, **TypeScript**, and **Tailwind CSS**. It allows users to register, log in, shorten URLs, and manage them with a clean, minimal UI.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🚀 Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 🔐 User Authentication (Login / Register)
+- 🔗 URL shortening with optional custom short codes
+- 📋 View, edit, and delete shortened URLs
+- 💎 Professional and minimalist dashboard UI
+- 🎯 Redirect support using generated short links
+- 📦 Axios integration with JWT handling
+- 🚪 Logout functionality included
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+---
+
+## 🧰 Tech Stack
+
+- React + TypeScript + Vite
+- Tailwind CSS
+- Axios
+- React Router DOM
+- LocalStorage for JWT management
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/url-shortener.git
+cd url-shortener/frontend
+````
+
+### 2. Install Dependencies
+
+Make sure you have **Node.js (v16 or higher)** and **npm** installed.
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 3. Configure Environment (Optional)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+If your backend API is not running on `http://localhost:3000`, update the base URL in `src/services/api.ts`.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```ts
+// src/services/api.ts
+const api = axios.create({
+  baseURL: "http://localhost:3000/api", // ← Update this if needed
+});
 ```
+
+---
+
+## 🧪 Running the App
+
+To start the development server:
+
+```bash
+npm run dev
+```
+
+Visit:
+
+```
+http://localhost:5173
+```
+
+---
+
+## 🔑 Authentication
+
+* On login, a JWT token is saved to `localStorage`
+* Axios automatically includes the token in requests using an interceptor
+* Logout removes the token
+
+---
+
+## 🗂️ Project Structure
+
+```
+frontend/
+│
+├── src/
+│   ├── components/       → Reusable UI components
+│   ├── pages/            → Login, Register, Dashboard pages
+│   ├── services/         → API request logic (authService, urlService)
+│   ├── utils/            → Token utilities
+│   ├── App.tsx           → App routes
+│   └── main.tsx          → Entry point
+│
+├── public/
+├── index.html
+├── tailwind.config.js
+├── tsconfig.json
+├── vite.config.ts
+└── package.json
+```
+
+---
+
+## 📋 Pages
+
+| Page      | Path         | Description                     |
+| --------- | ------------ | ------------------------------- |
+| Login     | `/login`     | Sign in to your account         |
+| Register  | `/register`  | Create a new user account       |
+| Dashboard | `/dashboard` | View, create, edit, delete URLs |
+
+---
+
+## 🧼 UI & Design
+
+* Built using **Tailwind CSS**
+* Clean layout with responsive design
+* Clear feedback for errors and actions
+* Minimalist dashboard with buttons to edit URLs and short codes
+* Logout button in the dashboard header
+
+---
+
+## ✅ Best Practices
+
+* Only registered users can access the dashboard
+* Each shortened URL is unique to the user
+* Token is securely handled via local storage and Axios headers
+
+---
