@@ -1,129 +1,176 @@
-import { useEffect, useState } from "react";
-import { createUrl, deleteUrl, getUrls } from "../services/urlService";
+import React, { useEffect, useState } from "react";
+import {
+  getUrls,
+  createUrl,
+  updateOriginalUrl,
+  updateShortCode,
+  deleteUrl,
+} from "../services/urlService";
 import { logout } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
-type Url = {
-  id: string;
-  short_code: string;
-  original_url: string;
-};
+const BASE_URL = "http://localhost:3000";
 
-export default function Dashboard() {
-  const [urls, setUrls] = useState<Url[]>([]);
+const Dashboard = () => {
+  const [urls, setUrls] = useState([]);
   const [originalUrl, setOriginalUrl] = useState("");
-  const [shortCode, setShortCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [customCode, setCustomCode] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  const fetchUrls = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getUrls();
-      setUrls(data);
-    } catch {
-      setError("Failed to fetch URLs");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchUrls();
   }, []);
 
-  const handleCreate = async () => {
-    setError(null);
+  const fetchUrls = async () => {
     try {
-      await createUrl(originalUrl, shortCode);
+      const data = await getUrls();
+      setUrls(data);
+    } catch {
+      setError("Failed to fetch URLs.");
+    }
+  };
+
+  const handleCreate = async () => {
+    try {
+      await createUrl(originalUrl, customCode);
       setOriginalUrl("");
-      setShortCode("");
+      setCustomCode("");
+      setError("");
       fetchUrls();
     } catch {
-      setError("Failed to create URL");
+      setError("Failed to create URL. Maybe short code already exists.");
+    }
+  };
+
+  const handleEditOriginal = async (id: string, current: string) => {
+    const newUrl = prompt("Edit original URL:", current);
+    if (newUrl && newUrl !== current) {
+      await updateOriginalUrl(id, newUrl);
+      fetchUrls();
+    }
+  };
+
+  const handleEditShort = async (id: string, current: string) => {
+    const newCode = prompt("Edit short code:", current);
+    if (newCode && newCode !== current) {
+      await updateShortCode(id, newCode);
+      fetchUrls();
     }
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      await deleteUrl(id);
-      fetchUrls();
-    } catch {
-      setError("Failed to delete URL");
-    }
+    await deleteUrl(id);
+    fetchUrls();
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-semibold mb-6 text-center">Dashboard</h1>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            Logout
+          </button>
+        </div>
 
-      <div className="mb-6 flex flex-col md:flex-row gap-4">
-        <input
-          placeholder="Original URL"
-          value={originalUrl}
-          onChange={(e) => setOriginalUrl(e.target.value)}
-          className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <input
-          placeholder="Short Code (optional)"
-          value={shortCode}
-          onChange={(e) => setShortCode(e.target.value)}
-          className="w-40 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          onClick={handleCreate}
-          className="bg-blue-600 text-white px-5 py-3 rounded-md hover:bg-blue-700 transition"
-        >
-          Create
-        </button>
-      </div>
-
-      {loading && <p className="text-center text-gray-500">Loading...</p>}
-      {error && (
-        <p className="text-center text-red-600 font-medium mb-4">{error}</p>
-      )}
-
-      <ul className="divide-y divide-gray-300">
-        {urls.map((url) => (
-          <li key={url.id} className="flex justify-between items-center py-3">
-            <div>
-              <p>
-                <span className="font-semibold">Short:</span>{" "}
-                <a
-                  href={`http://localhost:3000/${url.short_code}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  {`http://localhost:3000/${url.short_code}`}
-                </a>
-              </p>
-              <p>
-                <span className="font-semibold">Original:</span>{" "}
-                {url.original_url}
-              </p>
-            </div>
+        <div className="bg-white p-4 rounded shadow mb-6">
+          <div className="flex flex-col md:flex-row gap-2">
+            <input
+              type="text"
+              placeholder="Original URL"
+              value={originalUrl}
+              onChange={(e) => setOriginalUrl(e.target.value)}
+              className="border border-gray-300 p-2 rounded w-full md:w-2/3"
+            />
+            <input
+              type="text"
+              placeholder="Custom short code"
+              value={customCode}
+              onChange={(e) => setCustomCode(e.target.value)}
+              className="border border-gray-300 p-2 rounded w-full md:w-1/3"
+            />
             <button
-              onClick={() => handleDelete(url.id)}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+              onClick={handleCreate}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
-              Delete
+              Shorten
             </button>
-          </li>
-        ))}
-      </ul>
+          </div>
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+        </div>
 
-      <button
-        onClick={() => {
-          logout();
-          navigate("/login");
-        }}
-        className="mt-8 block mx-auto text-red-600 underline"
-      >
-        Logout
-      </button>
+        <div className="bg-white rounded shadow overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-100 text-gray-600">
+              <tr>
+                <th className="text-left px-4 py-3">Original URL</th>
+                <th className="text-left px-4 py-3">Short URL</th>
+                <th className="text-left px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {urls.map((url: any) => (
+                <tr key={url.id} className="border-t">
+                  <td className="px-4 py-3">{url.original_url}</td>
+                  <td className="px-4 py-3">
+                    <a
+                      href={`${BASE_URL}/${url.short_code}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      {BASE_URL}/{url.short_code}
+                    </a>
+                  </td>
+                  <td className="px-4 py-3 space-x-2">
+                    <button
+                      onClick={() =>
+                        handleEditOriginal(url.id, url.original_url)
+                      }
+                      className="text-yellow-600 hover:underline"
+                    >
+                      Edit URL
+                    </button>
+                    <button
+                      onClick={() => handleEditShort(url.id, url.short_code)}
+                      className="text-purple-600 hover:underline"
+                    >
+                      Edit Code
+                    </button>
+                    <button
+                      onClick={() => handleDelete(url.id)}
+                      className="text-red-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {urls.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="text-center px-4 py-6 text-gray-500"
+                  >
+                    No URLs created yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
