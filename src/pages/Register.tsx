@@ -59,6 +59,10 @@ const Register: React.FC = () => {
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+
+          {error && (
+            <p className="text-red-600 text-sm font-medium -mt-4">{error}</p>
+          )}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition"

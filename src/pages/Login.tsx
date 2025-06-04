@@ -18,7 +18,7 @@ const Login: React.FC = () => {
     } catch (err: any) {
       if (err.response?.status === 404) {
         setError("User not found. Please register first.");
-      } else if (err.response?.status === 401) {
+      } else if (err.response?.status === 400) {
         setError("Invalid credentials. Please try again.");
       } else {
         setError("An unexpected error occurred. Please try again later.");
