@@ -10,13 +10,15 @@ export const createUrl = async (originalUrl: string, customCode: string) => {
 };
 
 export const updateOriginalUrl = async (id: string, newUrl: string) => {
-  return await api.put(`/urls/edit-original/${id}`, { newOriginalUrl: newUrl });
+  return await api.put(`/url/${id}/edit-original/`, { newOriginalUrl: newUrl });
 };
 
 export const updateShortCode = async (id: string, newCode: string) => {
-  return await api.put(`/urls/edit-short/${id}`, { newShortCode: newCode });
+  return await api.put(`/url/${id}/edit-shortcode/`, {
+    newShortCode: newCode,
+  });
 };
 
 export const deleteUrl = async (id: string) => {
-  return await api.delete(`/urls/${id}`);
+  return await api.delete(`/url/${id}`);
 };
