@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getUrls,
   createUrl,
@@ -16,6 +16,15 @@ const Dashboard = () => {
   const [originalUrl, setOriginalUrl] = useState("");
   const [customCode, setCustomCode] = useState("");
   const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingField, setEditingField] = useState<
+    "original_url" | "short_code" | null
+  >(null);
+  const [editValue, setEditValue] = useState("");
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null
+  );
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,25 +52,47 @@ const Dashboard = () => {
     }
   };
 
-  const handleEditOriginal = async (id: string, current: string) => {
-    const newUrl = prompt("Edit original URL:", current);
-    if (newUrl && newUrl !== current) {
-      await updateOriginalUrl(id, newUrl);
+  const startEditing = (
+    id: string,
+    field: "original_url" | "short_code",
+    currentValue: string
+  ) => {
+    setEditingId(id);
+    setEditingField(field);
+    setEditValue(currentValue);
+    setConfirmingDeleteId(null); // close delete if open
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditingField(null);
+    setEditValue("");
+  };
+
+  const confirmEditing = async () => {
+    try {
+      if (editingId && editingField === "original_url") {
+        await updateOriginalUrl(editingId, editValue);
+      } else if (editingId && editingField === "short_code") {
+        await updateShortCode(editingId, editValue);
+      }
+      cancelEditing();
       fetchUrls();
+    } catch {
+      setError("Failed to update. Possibly duplicate short code.");
     }
   };
 
-  const handleEditShort = async (id: string, current: string) => {
-    const newCode = prompt("Edit short code:", current);
-    if (newCode && newCode !== current) {
-      await updateShortCode(id, newCode);
+  const confirmDelete = async (id: string) => {
+    try {
+      await deleteUrl(id);
       fetchUrls();
+    } catch (err) {
+      console.error("Failed to delete:", err);
+      setError("Failed to delete URL.");
+    } finally {
+      setConfirmingDeleteId(null);
     }
-  };
-
-  const handleDelete = async (id: string) => {
-    await deleteUrl(id);
-    fetchUrls();
   };
 
   const handleLogout = () => {
@@ -70,37 +101,38 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
+    <div className="min-h-screen bg-gray-100 px-4 py-6 text-gray-800">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
           >
             Logout
           </button>
         </div>
 
-        <div className="bg-white p-4 rounded shadow mb-6">
-          <div className="flex flex-col md:flex-row gap-2">
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Create Short URL</h2>
+          <div className="flex flex-col md:flex-row gap-3">
             <input
               type="text"
               placeholder="Original URL"
               value={originalUrl}
               onChange={(e) => setOriginalUrl(e.target.value)}
-              className="border border-gray-300 p-2 rounded w-full md:w-2/3"
+              className="flex-1 border border-gray-300 rounded px-3 py-2"
             />
             <input
               type="text"
               placeholder="Custom short code"
               value={customCode}
               onChange={(e) => setCustomCode(e.target.value)}
-              className="border border-gray-300 p-2 rounded w-full md:w-1/3"
+              className="md:w-64 border border-gray-300 rounded px-3 py-2"
             />
             <button
               onClick={handleCreate}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
             >
               Shorten
             </button>
@@ -108,50 +140,111 @@ const Dashboard = () => {
           {error && <p className="text-red-500 mt-2">{error}</p>}
         </div>
 
-        <div className="bg-white rounded shadow overflow-x-auto">
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-100 text-gray-600">
+            <thead className="bg-gray-50 border-b text-left text-gray-600">
               <tr>
-                <th className="text-left px-4 py-3">Original URL</th>
-                <th className="text-left px-4 py-3">Short URL</th>
-                <th className="text-left px-4 py-3">Actions</th>
+                <th className="px-4 py-3 font-medium">Original URL</th>
+                <th className="px-4 py-3 font-medium">Short URL</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {urls.map((url: any) => (
-                <tr key={url.id} className="border-t">
-                  <td className="px-4 py-3">{url.original_url}</td>
+                <tr key={url.id} className="border-t hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <a
-                      href={`${BASE_URL}/${url.short_code}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline"
-                    >
-                      {BASE_URL}/{url.short_code}
-                    </a>
+                    {editingId === url.id && editingField === "original_url" ? (
+                      <input
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="w-full border rounded px-2 py-1"
+                      />
+                    ) : (
+                      url.original_url
+                    )}
                   </td>
-                  <td className="px-4 py-3 space-x-2">
-                    <button
-                      onClick={() =>
-                        handleEditOriginal(url.id, url.original_url)
-                      }
-                      className="text-yellow-600 hover:underline"
-                    >
-                      Edit URL
-                    </button>
-                    <button
-                      onClick={() => handleEditShort(url.id, url.short_code)}
-                      className="text-purple-600 hover:underline"
-                    >
-                      Edit Code
-                    </button>
-                    <button
-                      onClick={() => handleDelete(url.id)}
-                      className="text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-4 py-3 text-blue-600">
+                    {editingId === url.id && editingField === "short_code" ? (
+                      <input
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="w-full border rounded px-2 py-1"
+                      />
+                    ) : (
+                      <a
+                        href={`${BASE_URL}/${url.short_code}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        {BASE_URL}/{url.short_code}
+                      </a>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 space-x-2 whitespace-nowrap">
+                    {editingId === url.id ? (
+                      <>
+                        <button
+                          onClick={confirmEditing}
+                          className="text-green-600 hover:underline"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={cancelEditing}
+                          className="text-gray-600 hover:underline"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : confirmingDeleteId === url.id ? (
+                      <>
+                        <button
+                          onClick={() => confirmDelete(url.id)}
+                          className="text-red-600 font-semibold hover:underline"
+                        >
+                          Confirm Delete
+                        </button>
+                        <button
+                          onClick={() => setConfirmingDeleteId(null)}
+                          className="text-gray-600 hover:underline"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() =>
+                            startEditing(
+                              url.id,
+                              "original_url",
+                              url.original_url
+                            )
+                          }
+                          className="text-yellow-600 hover:underline"
+                        >
+                          Edit URL
+                        </button>
+                        <button
+                          onClick={() =>
+                            startEditing(url.id, "short_code", url.short_code)
+                          }
+                          className="text-purple-600 hover:underline"
+                        >
+                          Edit Code
+                        </button>
+                        <button
+                          onClick={() => {
+                            setConfirmingDeleteId(url.id);
+                            cancelEditing();
+                          }}
+                          className="text-red-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
