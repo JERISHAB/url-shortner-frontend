@@ -51,7 +51,6 @@ const Login: React.FC = () => {
             className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
-          {/*Error message displayed here */}
           {error && (
             <p className="text-red-600 text-sm font-medium -mt-4">{error}</p>
           )}

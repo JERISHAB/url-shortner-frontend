@@ -48,7 +48,7 @@ const Dashboard = () => {
       setError("");
       fetchUrls();
     } catch {
-      setError("Failed to create URL. Maybe short code already exists.");
+      setError("Failed to create URL.short code already exists.");
     }
   };
 
@@ -60,7 +60,7 @@ const Dashboard = () => {
     setEditingId(id);
     setEditingField(field);
     setEditValue(currentValue);
-    setConfirmingDeleteId(null); // close delete if open
+    setConfirmingDeleteId(null); 
   };
 
   const cancelEditing = () => {
@@ -128,7 +128,7 @@ const Dashboard = () => {
               placeholder="Custom short code"
               value={customCode}
               onChange={(e) => setCustomCode(e.target.value)}
-              className="md:w-64 border border-gray-300 rounded px-3 py-2"
+              className=" border border-gray-300 rounded px-3 py-2"
             />
             <button
               onClick={handleCreate}
@@ -151,7 +151,7 @@ const Dashboard = () => {
             </thead>
             <tbody>
               {urls.map((url: any) => (
-                <tr key={url.id} className="border-t hover:bg-gray-50">
+                <tr key={url.id} className="border-t">
                   <td className="px-4 py-3">
                     {editingId === url.id && editingField === "original_url" ? (
                       <input
@@ -174,7 +174,6 @@ const Dashboard = () => {
                       <a
                         href={`${BASE_URL}/${url.short_code}`}
                         target="_blank"
-                        rel="noopener noreferrer"
                         className="underline"
                       >
                         {BASE_URL}/{url.short_code}
@@ -201,7 +200,7 @@ const Dashboard = () => {
                       <>
                         <button
                           onClick={() => confirmDelete(url.id)}
-                          className="text-red-600 font-semibold hover:underline"
+                          className="text-red-600  hover:underline"
                         >
                           Confirm Delete
                         </button>
