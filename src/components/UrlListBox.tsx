@@ -1,76 +1,80 @@
 import { useEffect, useState } from "react";
-import { getUrls,updateOriginalUrl,updateShortCode,deleteUrl } from "../services/urlService";
+import {
+  getUrls,
+  updateOriginalUrl,
+  updateShortCode,
+  deleteUrl,
+} from "../services/urlService";
 
 const BASE_URL = "http://localhost:3000";
 
-const UrlListBox = ({newUrl}:any) => {
+const UrlListBox = ({ newUrl }: any) => {
+  const [urls, setUrls] = useState([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingField, setEditingField] = useState<
+    "original_url" | "short_code" | null
+  >(null);
+  const [editValue, setEditValue] = useState("");
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null
+  );
+  const [error, setError] = useState("");
 
-    const [urls, setUrls] = useState([])
-    const [editingId, setEditingId] = useState<string | null>(null)
-    const [editingField, setEditingField] = useState<"original_url" | "short_code" | null>(null)
-    const [editValue, setEditValue] = useState("")
-    const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null)
-    const [error, setError] = useState("");
+  useEffect(() => {
+    fetchUrls();
+  }, [newUrl]);
 
+  const fetchUrls = async () => {
+    try {
+      const data = await getUrls();
+      setUrls(data);
+    } catch {
+      setError("Failed to fetch URLs.");
+    }
+  };
 
+  const startEditing = (
+    id: string,
+    field: "original_url" | "short_code",
+    currentValue: string
+  ) => {
+    setEditingId(id);
+    setEditingField(field);
+    setEditValue(currentValue);
+    setConfirmingDeleteId(null);
+  };
 
-    useEffect(() => {
-        fetchUrls();
-      }, [newUrl]);
-    
-        const  fetchUrls = async () => {
-        try {
-          const data = await getUrls();
-          setUrls(data);
-        } catch {
-          setError("Failed to fetch URLs.");
-        }
-      };
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditingField(null);
+    setEditValue("");
+  };
 
+  const confirmEditing = async () => {
+    try {
+      if (editingId && editingField === "original_url") {
+        await updateOriginalUrl(editingId, editValue);
+      } else if (editingId && editingField === "short_code") {
+        await updateShortCode(editingId, editValue);
+      }
+      cancelEditing();
+      fetchUrls();
+    } catch {
+      setError("Failed to update. Possibly duplicate short code.");
+    }
+  };
 
-
-    const startEditing = (
-      id: string,
-      field: "original_url" | "short_code",
-      currentValue: string
-    ) => {
-      setEditingId(id);
-      setEditingField(field);
-      setEditValue(currentValue);
+  const confirmDelete = async (id: string) => {
+    try {
+      await deleteUrl(id);
+      fetchUrls();
+    } catch (err) {
+      console.error("Failed to delete:", err);
+      setError("Failed to delete URL.");
+    } finally {
       setConfirmingDeleteId(null);
-    };
-
-    const cancelEditing = () => {
-      setEditingId(null);
-      setEditingField(null);
-      setEditValue("");
-    };
-
-    const confirmEditing = async () => {
-      try {
-        if (editingId && editingField === "original_url") {
-          await updateOriginalUrl(editingId, editValue);
-        } else if (editingId && editingField === "short_code") {
-          await updateShortCode(editingId, editValue);
-        }
-        cancelEditing();
-        fetchUrls();
-      } catch {
-        setError("Failed to update. Possibly duplicate short code.");
-      }
-    };
-
-    const confirmDelete = async (id: string) => {
-      try {
-        await deleteUrl(id);
-        fetchUrls();
-      } catch (err) {
-        console.error("Failed to delete:", err);
-        setError("Failed to delete URL.");
-      } finally {
-        setConfirmingDeleteId(null);
-      }
-    };
+    }
+  };
 
   return (
     <>
@@ -190,6 +194,6 @@ const UrlListBox = ({newUrl}:any) => {
       </div>
     </>
   );
-}
+};
 
-export default UrlListBox
+export default UrlListBox;

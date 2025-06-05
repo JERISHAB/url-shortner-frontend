@@ -21,9 +21,6 @@ const Register: React.FC = () => {
         setError("User already exists. Try logging in.");
       } else if (err.response?.status === 400) {
         setError("Please fill all fields correctly.");
-      } else {
-        setError("Something went wrong. Please try again.");
-        console.log(error)
       }
     }
   };

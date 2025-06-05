@@ -1,23 +1,21 @@
-
 // import {fetchUrls} ;
 
 import { useState } from "react";
 
 type Props = {
-  onCreate: (data: any) => void
-  error: string
-}
+  onCreate: (data: any) => void;
+  error: string;
+};
 
-const ShortUrlBox = ({onCreate, error}: Props) => {
-
+const ShortUrlBox = ({ onCreate, error }: Props) => {
   const [originalUrl, setOriginalUrl] = useState("");
-  const [customCode, setCustomCode] = useState("")
+  const [customCode, setCustomCode] = useState("");
 
   const handleSubmit = () => {
-    onCreate({ originalUrl, customCode })
-    setOriginalUrl("")
-    setCustomCode("")
-  }
+    onCreate({ originalUrl, customCode });
+    setOriginalUrl("");
+    setCustomCode("");
+  };
 
   return (
     <>
@@ -49,6 +47,6 @@ const ShortUrlBox = ({onCreate, error}: Props) => {
       </div>
     </>
   );
-}
+};
 
-export default ShortUrlBox
+export default ShortUrlBox;
