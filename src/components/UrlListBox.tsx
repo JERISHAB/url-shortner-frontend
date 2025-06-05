@@ -6,9 +6,22 @@ import {
   deleteUrl,
 } from "../services/urlService";
 
+type Url = {
+    id: number,
+    short_code: string,
+    original_url: string
+    created_at: string
+    user_id: number
+}
+type newUrl = {
+    newUrl: Url[]
+}
+
+
 const BASE_URL = "http://localhost:3000";
 
-const UrlListBox = ({ newUrl }: any) => {
+const UrlListBox = ({ newUrl }: newUrl) => {
+
   const [urls, setUrls] = useState([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingField, setEditingField] = useState<
@@ -89,6 +102,7 @@ const UrlListBox = ({ newUrl }: any) => {
           </thead>
           <tbody>
             {urls.map((url: any) => (
+
               <tr key={url.id} className="border-t">
                 <td className="px-4 py-3">
                   {editingId === url.id && editingField === "original_url" ? (
