@@ -1,29 +1,27 @@
-import { useEffect, useState } from "react";
+import {useEffect,useState } from "react";
 import {
   getUrls,
   createUrl,
-  updateOriginalUrl,
-  updateShortCode,
-  deleteUrl,
+ // updateOriginalUrl,
+  //updateShortCode,
+  //deleteUrl,
 } from "../services/urlService";
 import { logout } from "../services/authService";
 import { useNavigate } from "react-router-dom";
-
-const BASE_URL = "http://localhost:3000";
+import ShortUrlBox from "../components/ShortUrlBox";
+import UrlListBox from "../components/UrlListBox";
 
 const Dashboard = () => {
-  const [urls, setUrls] = useState([]);
-  const [originalUrl, setOriginalUrl] = useState("");
-  const [customCode, setCustomCode] = useState("");
-  const [error, setError] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingField, setEditingField] = useState<
-    "original_url" | "short_code" | null
-  >(null);
-  const [editValue, setEditValue] = useState("");
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
-    null
-  );
+   const [urls, setUrls] = useState([]);
+   const [error, setError] = useState("");
+  // const [editingId, setEditingId] = useState<string | null>(null);
+  // const [editingField, setEditingField] = useState<
+  //   "original_url" | "short_code" | null
+  // >(null);
+  // const [editValue, setEditValue] = useState("");
+  // const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+  //   null
+  // );
 
   const navigate = useNavigate();
 
@@ -31,7 +29,7 @@ const Dashboard = () => {
     fetchUrls();
   }, []);
 
-  const fetchUrls = async () => {
+    const  fetchUrls = async () => {
     try {
       const data = await getUrls();
       setUrls(data);
@@ -40,60 +38,58 @@ const Dashboard = () => {
     }
   };
 
-  const handleCreate = async () => {
+  const handleCreate =  ({ originalUrl, customCode }: any) => {
     try {
-      await createUrl(originalUrl, customCode);
-      setOriginalUrl("");
-      setCustomCode("");
+      createUrl(originalUrl, customCode);
       setError("");
       fetchUrls();
-    } catch {
-      setError("Failed to create URL.short code already exists.");
+    } catch (err: any) {
+      setError(err.response.data.errors[0].message);
     }
   };
 
-  const startEditing = (
-    id: string,
-    field: "original_url" | "short_code",
-    currentValue: string
-  ) => {
-    setEditingId(id);
-    setEditingField(field);
-    setEditValue(currentValue);
-    setConfirmingDeleteId(null); 
-  };
+  // const startEditing = (
+  //   id: string,
+  //   field: "original_url" | "short_code",
+  //   currentValue: string
+  // ) => {
+  //   setEditingId(id);
+  //   setEditingField(field);
+  //   setEditValue(currentValue);
+  //   setConfirmingDeleteId(null); 
+  // };
 
-  const cancelEditing = () => {
-    setEditingId(null);
-    setEditingField(null);
-    setEditValue("");
-  };
+  // const cancelEditing = () => {
+  //   setEditingId(null);
+  //   setEditingField(null);
+  //   setEditValue("");
+  // };
 
-  const confirmEditing = async () => {
-    try {
-      if (editingId && editingField === "original_url") {
-        await updateOriginalUrl(editingId, editValue);
-      } else if (editingId && editingField === "short_code") {
-        await updateShortCode(editingId, editValue);
-      }
-      cancelEditing();
-      fetchUrls();
-    } catch {
-      setError("Failed to update. Possibly duplicate short code.");
-    }
-  };
+  // const confirmEditing = async () => {
+  //   try {
+  //     if (editingId && editingField === "original_url") {
+  //       await updateOriginalUrl(editingId, editValue);
+  //     } else if (editingId && editingField === "short_code") {
+  //       await updateShortCode(editingId, editValue);
+  //     }
+  //     cancelEditing();
+  //     fetchUrls();
+  //   } catch {
+  //     setError("Failed to update. Possibly duplicate short code.");
+  //   }
+  // };
 
-  const confirmDelete = async (id: string) => {
-    try {
-      await deleteUrl(id);
-      fetchUrls();
-    } catch (err) {
-      console.error("Failed to delete:", err);
-      setError("Failed to delete URL.");
-    } finally {
-      setConfirmingDeleteId(null);
-    }
-  };
+  // const confirmDelete = async (id: string) => {
+  //   try {
+  //     await deleteUrl(id);
+  //     fetchUrls();
+  //   } catch (err) {
+  //     console.error("Failed to delete:", err);
+  //     setError("Failed to delete URL.");
+  //   } finally {
+  //     setConfirmingDeleteId(null);
+  //   }
+  // };
 
   const handleLogout = () => {
     logout();
@@ -113,34 +109,11 @@ const Dashboard = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Create Short URL</h2>
-          <div className="flex flex-col md:flex-row gap-3">
-            <input
-              type="text"
-              placeholder="Original URL"
-              value={originalUrl}
-              onChange={(e) => setOriginalUrl(e.target.value)}
-              className="flex-1 border border-gray-300 rounded px-3 py-2"
-            />
-            <input
-              type="text"
-              placeholder="Custom short code"
-              value={customCode}
-              onChange={(e) => setCustomCode(e.target.value)}
-              className=" border border-gray-300 rounded px-3 py-2"
-            />
-            <button
-              onClick={handleCreate}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-            >
-              Shorten
-            </button>
-          </div>
-          {error && <p className="text-red-500 mt-2">{error}</p>}
-        </div>
+        <ShortUrlBox onCreate={handleCreate} error={error} />
+        
+        <UrlListBox newUrl={urls} />
 
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
+        {/* <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 border-b text-left text-gray-600">
               <tr>
@@ -259,10 +232,11 @@ const Dashboard = () => {
               )}
             </tbody>
           </table>
-        </div>
+        </div> */}
       </div>
     </div>
   );
 };
 
 export default Dashboard;
+
