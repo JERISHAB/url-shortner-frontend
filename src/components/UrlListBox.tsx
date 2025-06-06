@@ -1,28 +1,29 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   getUrls,
   updateOriginalUrl,
   updateShortCode,
   deleteUrl,
 } from "../services/urlService";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-type Url = {
-    id: number,
-    short_code: string,
-    original_url: string
-    created_at: string
-    user_id: number
-}
-type newUrl = {
-    newUrl: Url[]
-}
+// type Url = {
+//     id: number,
+//     short_code: string,
+//     original_url: string
+//     created_at: string
+//     user_id: number
+// }
+// type newUrl = {
+//     newUrl: Url[]
+// }
 
 
 const BASE_URL = "http://localhost:3000";
 
-const UrlListBox = ({ newUrl }: newUrl) => {
+const UrlListBox = () => {
 
-  const [urls, setUrls] = useState([]);
+  // const [urls, setUrls] = useState([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingField, setEditingField] = useState<
     "original_url" | "short_code" | null
@@ -32,19 +33,26 @@ const UrlListBox = ({ newUrl }: newUrl) => {
     null
   );
   const [error, setError] = useState("");
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchUrls();
-  }, [newUrl]);
+  // useEffect(() => {
+  //   fetchUrls();
+  // }, [newUrl]);
 
-  const fetchUrls = async () => {
-    try {
-      const data = await getUrls();
-      setUrls(data);
-    } catch {
-      setError("Failed to fetch URLs.");
-    }
-  };
+  const {data: urls = []} = useQuery({
+    queryKey: ["urls"],
+    queryFn: getUrls,
+  });
+
+
+  // const fetchUrls = async () => {
+  //   try {
+  //     const data = await getUrls();
+  //     setUrls(data);
+  //   } catch {
+  //     setError("Failed to fetch URLs.");
+  //   }
+  // };
 
   const startEditing = (
     id: string,
@@ -63,31 +71,106 @@ const UrlListBox = ({ newUrl }: newUrl) => {
     setEditValue("");
   };
 
+
+  const editMutationOriginal = useMutation({
+    mutationFn: ({ editingId, editValue }: any) =>
+      updateOriginalUrl(editingId, editValue),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["urls"] })
+      setError("")
+    },
+    onError: (err: any) => {
+      const message =
+        err?.response?.data?.errors?.[0]?.message || "Failed to edit original Url";
+      setError(message);
+    }
+  }); 
+
+
+  const editMutationShortcode = useMutation({
+    mutationFn: ({ editingId, editValue }: any) =>
+      updateShortCode(editingId, editValue),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["urls"] });
+      setError("");
+    },
+    onError: (err: any) => {
+      const message =
+        err?.response?.data?.errors?.[0]?.message ||
+        "Failed to edit short code";
+      setError(message);
+    },
+  }); 
+
+  
+
   const confirmEditing = async () => {
     try {
+      
+      const data= {
+        editingId,
+        editingField,
+        editValue
+      }
       if (editingId && editingField === "original_url") {
-        await updateOriginalUrl(editingId, editValue);
+        editMutationOriginal.mutate(data);
       } else if (editingId && editingField === "short_code") {
-        await updateShortCode(editingId, editValue);
+        editMutationShortcode.mutate(data);
       }
       cancelEditing();
-      fetchUrls();
     } catch {
       setError("Failed to update. Possibly duplicate short code.");
     }
   };
 
-  const confirmDelete = async (id: string) => {
-    try {
-      await deleteUrl(id);
-      fetchUrls();
-    } catch (err) {
-      console.error("Failed to delete:", err);
-      setError("Failed to delete URL.");
-    } finally {
-      setConfirmingDeleteId(null);
+  // const confirmEditing = async () => {
+  //   try {
+  //     if (editingId && editingField === "original_url") {
+  //       await updateOriginalUrl(editingId, editValue);
+  //     } else if (editingId && editingField === "short_code") {
+  //       await updateShortCode(editingId, editValue);
+  //     }
+  //     cancelEditing();
+  //   } catch {
+  //     setError("Failed to update. Possibly duplicate short code.");
+  //   }
+  // };
+
+
+
+
+  // const confirmDelete = async (id: string) => {
+  //   try {
+  //     await deleteUrl(id);
+  //   } catch (err) {
+  //     console.error("Failed to delete:", err);
+  //     setError("Failed to delete URL.");
+  //   } finally {
+  //     setConfirmingDeleteId(null);
+  //   }
+  // };
+
+
+  const deleteMutation = useMutation({
+    mutationFn: ( id:string) => deleteUrl(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["urls"] });
+      setError("");
+    },
+    onError: (err: any) => {
+      const message =
+        err?.response?.data?.errors?.[0]?.message || "Failed to delete URL";
+      setError(message);
     }
+  })
+
+  const confirmDelete = (id: string ) => {
+    deleteMutation.mutate(id);
+    console.log(id);
   };
+
+
+  
 
   return (
     <>
