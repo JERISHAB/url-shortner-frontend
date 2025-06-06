@@ -93,7 +93,7 @@ const Dashboard = () => {
             Error fetching URLs.
           </p>
         ) : (
-          <UrlListBox newUrl={urls} />
+          <UrlListBox />
         )}
       </div>
     </div>
