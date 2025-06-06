@@ -11,7 +11,8 @@ const ShortUrlBox = ({ onCreate, error }: Props) => {
   const [originalUrl, setOriginalUrl] = useState("");
   const [customCode, setCustomCode] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = (e : React.FormEvent) => {
+    e.preventDefault()
     onCreate({ originalUrl, customCode });
     setOriginalUrl("");
     setCustomCode("");

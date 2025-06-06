@@ -1,37 +1,70 @@
-import {useEffect,useState } from "react";
-import {getUrls,createUrl} from "../services/urlService";
+import { useState } from "react";
+import { getUrls, createUrl } from "../services/urlService";
 import { logout } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import ShortUrlBox from "../components/ShortUrlBox";
 import UrlListBox from "../components/UrlListBox";
+// import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Dashboard = () => {
-   const [urls, setUrls] = useState([]);
-   const [error, setError] = useState("");
-   const navigate = useNavigate();
+  // const [urls, setUrls] = useState([]);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchUrls();
-  }, []);
+  const queryClient = useQueryClient();
+  
 
-    const  fetchUrls = async () => {
-    try {
-      const data = await getUrls();
-      setUrls(data);
-    } catch {
-      setError("Failed to fetch URLs.");
-    }
-  };
+  // useEffect(() => {
+  //   fetchUrls();
 
-  const handleCreate =  ({ originalUrl, customCode }: any) => {
-    try {
-      createUrl(originalUrl, customCode);
+  // }, []);
+
+  //   const  fetchUrls = async () => {
+  //   try {
+  //     const data = await getUrls();
+  //     setUrls(data);
+  //   } catch {
+  //     setError("Failed to fetch URLs.");
+  //   }
+  // };
+
+  const { data: urls = [], isLoading, isError } = useQuery({
+  queryKey: ["urls"],
+  queryFn: getUrls,
+  });
+  
+  const createMutation = useMutation({
+    mutationFn: ({ originalUrl, customCode }: any) =>
+      createUrl(originalUrl, customCode),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["urls"] }); 
       setError("");
-      fetchUrls();
-    } catch (err: any) {
-      setError(err.response.data.errors[0].message);
-    }
+    },
+    onError: (err: any) => {
+      const message =
+        err?.response?.data?.errors?.[0]?.message || "Failed to create URL";
+      setError(message);
+    },
+  });
+
+  
+  const handleCreate = (data: { originalUrl: string; customCode: string }) => {
+    createMutation.mutate(data);
+    console.log(data)
   };
+  
+
+  // const handleCreate = async ({ originalUrl, customCode }: any) => {
+  //   try {
+  //     await createUrl(originalUrl, customCode);
+  //     setError("");
+  //     fetchUrls();
+  //   } catch (err: any) {
+  //     setError(err.response.data.errors[0].message);
+  //   }
+  // };
+
 
   const handleLogout = () => {
     logout();
@@ -52,13 +85,19 @@ const Dashboard = () => {
         </div>
 
         <ShortUrlBox onCreate={handleCreate} error={error} />
-        
-        <UrlListBox newUrl={urls} />
 
+        {isLoading ? (
+          <p className="text-center text-gray-500 mt-6">Loading URLs...</p>
+        ) : isError ? (
+          <p className="text-center text-red-500 mt-6">
+            Error fetching URLs.
+          </p>
+        ) : (
+          <UrlListBox newUrl={urls} />
+        )}
       </div>
     </div>
   );
 };
 
 export default Dashboard;
-

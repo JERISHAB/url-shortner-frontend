@@ -21,4 +21,4 @@ export const updateShortCode = async (id: string, newCode: string) => {
 
 export const deleteUrl = async (id: string) => {
   return await api.delete(`/url/${id}`);
-};
+};    
