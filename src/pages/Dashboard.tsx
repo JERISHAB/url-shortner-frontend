@@ -6,6 +6,9 @@ import ShortUrlBox from "../components/ShortUrlBox";
 import UrlListBox from "../components/UrlListBox";
 // import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import "./Dashboard.css";
+
+
 
 const Dashboard = () => {
   // const [urls, setUrls] = useState([]);
@@ -72,30 +75,19 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-6 text-gray-800">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
-          >
-            Logout
-          </button>
-        </div>
-
-        <ShortUrlBox onCreate={handleCreate} error={error} />
-
-        {isLoading ? (
-          <p className="text-center text-gray-500 mt-6">Loading URLs...</p>
-        ) : isError ? (
-          <p className="text-center text-red-500 mt-6">
-            Error fetching URLs.
-          </p>
-        ) : (
-          <UrlListBox />
-        )}
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1 className="dashboard-title">Dashboard</h1>
+        <button onClick={handleLogout} className="logout-button">
+          Logout
+        </button>
       </div>
+
+      <ShortUrlBox onCreate={handleCreate} error={error} />
+
+      {isLoading && <p className="message">Loading URLs...</p>}
+      {isError && <p className="message error">Error fetching URLs.</p>}
+      {!isLoading && !isError && <UrlListBox />}
     </div>
   );
 };

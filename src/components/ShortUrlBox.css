@@ -1,0 +1,62 @@
+.short-url-box {
+    background: #ffffff;
+    border: 1px solid #ccc;
+    margin: 20px;
+    padding: 24px;
+  }
+  
+  .short-url-box h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  
+  .short-url-form {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+  }
+  
+  .short-url-input {
+    border: 1px solid #ccc;
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+  
+  .short-url-input.original {
+    flex: 2;
+  }
+  
+  .short-url-input.custom {
+    flex: 1;
+  }
+  
+  .short-url-button {
+    border: none;
+    background: #007bff;
+    color: white;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .short-url-button:hover {
+    background: #0056b3;
+  }
+  
+  .short-url-error {
+    color: red;
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  
+  @media (max-width: 600px) {
+    .short-url-form {
+      flex-direction: column;
+    }
+  
+    .short-url-button {
+      width: 100%;
+    }
+  }
+  

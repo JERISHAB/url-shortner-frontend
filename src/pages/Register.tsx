@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../services/authService";
+import "./Register.css"
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -26,19 +27,17 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-10 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">
-          Register
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="register-page">
+      <div className="register-box">
+        <h2 className="register-title">Register</h2>
+        <form onSubmit={handleSubmit} className="register-form">
           <input
             type="text"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-field"
           />
           <input
             type="email"
@@ -46,7 +45,7 @@ const Register: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-field"
           />
           <input
             type="password"
@@ -54,25 +53,19 @@ const Register: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-field"
           />
 
-          {error && (
-            <p className="text-red-600 text-sm font-medium -mt-4">{error}</p>
-          )}
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition"
-          >
+          {error && <p className="error-message">{error}</p>}
+
+          <button type="submit" className="submit-button">
             Register
           </button>
         </form>
-        <p className="mt-6 text-center text-gray-600 text-sm">
+
+        <p className="login-link">
           Already have an account?{" "}
-          <button
-            className="text-blue-600 hover:underline font-medium"
-            onClick={() => navigate("/login")}
-          >
+          <button className="link-button" onClick={() => navigate("/login")}>
             Login
           </button>
         </p>
